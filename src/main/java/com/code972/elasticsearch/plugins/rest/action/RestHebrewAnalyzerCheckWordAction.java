@@ -27,12 +27,11 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.hebrew.HebrewAnalyzer;
 import org.apache.lucene.analysis.hebrew.HebrewQueryLightAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.elasticsearch.client.node.NodeClient;
-import org.elasticsearch.common.inject.Inject;
+import org.elasticsearch.client.internal.node.NodeClient;
 import org.elasticsearch.xcontent.XContentBuilder;
 import org.elasticsearch.rest.BaseRestHandler;
 import org.elasticsearch.rest.RestRequest;
-import org.elasticsearch.rest.BytesRestResponse;
+import org.elasticsearch.rest.RestResponse;
 import org.elasticsearch.rest.RestStatus;
 
 import java.io.IOException;
@@ -47,7 +46,6 @@ import static org.elasticsearch.rest.RestRequest.Method.GET;
  * REST endpoint for getting lemmas for a given word
  */
 public class RestHebrewAnalyzerCheckWordAction extends BaseRestHandler {
-    @Inject
     public RestHebrewAnalyzerCheckWordAction() {
         super();
     }
@@ -86,7 +84,7 @@ public class RestHebrewAnalyzerCheckWordAction extends BaseRestHandler {
                 builder.endArray();
             }
             builder.endObject();
-            channel.sendResponse(new BytesRestResponse(RestStatus.OK, builder));
+            channel.sendResponse(new RestResponse(RestStatus.OK, builder));
         };
     }
 

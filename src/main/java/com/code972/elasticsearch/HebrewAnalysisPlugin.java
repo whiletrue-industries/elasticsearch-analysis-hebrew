@@ -39,12 +39,14 @@ import org.apache.lucene.analysis.Analyzer;
 import org.elasticsearch.SpecialPermission;
 import org.elasticsearch.cluster.metadata.IndexNameExpressionResolver;
 import org.elasticsearch.cluster.node.DiscoveryNodes;
+import org.elasticsearch.common.io.stream.NamedWriteableRegistry;
 import org.elasticsearch.common.settings.ClusterSettings;
 import org.elasticsearch.common.settings.IndexScopedSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.settings.SettingsFilter;
 import org.elasticsearch.core.SuppressForbidden;
 import org.elasticsearch.env.Environment;
+import org.elasticsearch.features.NodeFeature;
 import org.elasticsearch.index.analysis.AnalyzerProvider;
 import org.elasticsearch.index.analysis.TokenFilterFactory;
 import org.elasticsearch.index.analysis.TokenizerFactory;
@@ -66,6 +68,7 @@ import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static java.util.Collections.singletonList;
@@ -182,12 +185,14 @@ public final class HebrewAnalysisPlugin extends Plugin implements ActionPlugin, 
         }
     }
 
+
     @Override
-    public List<RestHandler> getRestHandlers(Settings settings, RestController restController,
+    public List<RestHandler> getRestHandlers(Settings settings, NamedWriteableRegistry namedWriteableRegistry, RestController restController,
                                              ClusterSettings clusterSettings, IndexScopedSettings indexScopedSettings,
                                              SettingsFilter settingsFilter,
                                              IndexNameExpressionResolver indexNameExpressionResolver,
-                                             Supplier<DiscoveryNodes> nodesInCluster) {
+                                             Supplier<DiscoveryNodes> nodesInCluster,
+					     Predicate<NodeFeature> clusterSupportsFeature) {
         return singletonList(new RestHebrewAnalyzerCheckWordAction());
     }
 
@@ -195,10 +200,10 @@ public final class HebrewAnalysisPlugin extends Plugin implements ActionPlugin, 
     public Map<String, AnalysisModule.AnalysisProvider<TokenFilterFactory>> getTokenFilters() {
         final Map<String, AnalysisModule.AnalysisProvider<TokenFilterFactory>> extra = new HashMap<>();
         extra.put("hebrew_lemmatizer", (indexSettings, env, name, settings) ->
-                new HebrewLemmatizerTokenFilterFactory(indexSettings, env, name, settings, dict));
-        extra.put("niqqud", NiqqudFilterTokenFilterFactory::new);
-        extra.put("add_suffix", AddSuffixTokenFilterFactory::new);
-        extra.put("mark_hebrew_tokens", MarkHebrewTokensFilterFactory::new);
+                new HebrewLemmatizerTokenFilterFactory(env, name, settings, dict));
+        extra.put("niqqud", (indexSettings, env, name, settings) -> new NiqqudFilterTokenFilterFactory(env, name, settings));
+        extra.put("add_suffix", (indexSettings, env, name, settings) -> new AddSuffixTokenFilterFactory(env, name, settings));
+        extra.put("mark_hebrew_tokens", (indexSettings, env, name, settings) -> new MarkHebrewTokensFilterFactory(env, name, settings));
         return unmodifiableMap(extra);
     }
 
@@ -213,13 +218,13 @@ public final class HebrewAnalysisPlugin extends Plugin implements ActionPlugin, 
         final Map<String, AnalysisModule.AnalysisProvider<AnalyzerProvider<? extends Analyzer>>> extra =
                 new HashMap<>();
         extra.put("hebrew", (indexSettings, env, name, settings) ->
-                new HebrewIndexingAnalyzerProvider(indexSettings, env, name, settings, dict));
+                new HebrewIndexingAnalyzerProvider(env, name, settings, dict));
         extra.put("hebrew_query", (indexSettings, env, name, settings) ->
-                new HebrewQueryAnalyzerProvider(indexSettings, env, name, settings, dict));
+                new HebrewQueryAnalyzerProvider(env, name, settings, dict));
         extra.put("hebrew_query_light", (indexSettings, env, name, settings) ->
-                new HebrewQueryLightAnalyzerProvider(indexSettings, env, name, settings, dict));
+                new HebrewQueryLightAnalyzerProvider(env, name, settings, dict));
         extra.put("hebrew_exact", (indexSettings, env, name, settings) ->
-                new HebrewExactAnalyzerProvider(indexSettings, env, name, settings, dict));
+                new HebrewExactAnalyzerProvider(env, name, settings, dict));
         return unmodifiableMap(extra);
     }
 }
