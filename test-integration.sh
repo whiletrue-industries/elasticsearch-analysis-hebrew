@@ -82,22 +82,15 @@ curl -s -X PUT "http://localhost:9200/test-hebrew?wait_for_active_shards=1" -H '
   "settings": {
     "index": {
       "number_of_shards": 1,
-      "number_of_replicas": 0,
-      "analysis": {
-        "analyzer": {
-          "hebrew": {
-            "tokenizer": "hebrew"
-          }
-        }
-      }
+      "number_of_replicas": 0
     }
   },
   "mappings": {
     "properties": {
       "content": {
         "type": "text",
-        "analyzer": "hebrew",
-        "search_analyzer": "hebrew"
+        "analyzer": "hebrew_query",
+        "search_analyzer": "hebrew_query"
       }
     }
   }
@@ -166,7 +159,7 @@ fi
 echo "Testing analyze API with Hebrew analyzer..."
 ANALYZE_RESULT=$(curl -s -X POST "http://localhost:9200/test-hebrew/_analyze" -H 'Content-Type: application/json' -d'
 {
-  "analyzer": "hebrew",
+  "analyzer": "hebrew_query",
   "text": "בדיקה של מנתח עברי"
 }')
 
