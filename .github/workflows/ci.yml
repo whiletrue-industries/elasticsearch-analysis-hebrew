@@ -36,13 +36,13 @@ jobs:
       run: ./gradlew build
 
     - name: Upload plugin artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: elasticsearch-analysis-hebrew-plugin
         path: build/distributions/analysis-hebrew-*.zip
 
     - name: Upload test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: test-results
@@ -86,7 +86,7 @@ jobs:
         ./test-integration.sh
 
     - name: Upload integration test logs
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: failure()
       with:
         name: integration-test-logs
