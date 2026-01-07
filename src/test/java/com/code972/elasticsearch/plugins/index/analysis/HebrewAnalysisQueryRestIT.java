@@ -19,23 +19,23 @@
 
 package com.code972.elasticsearch.plugins.index.analysis;
 
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.hebrew.TokenFilters.MarkHebrewTokensFilter;
-import org.elasticsearch.common.inject.Inject;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.env.Environment;
-import org.elasticsearch.index.IndexSettings;
-import org.elasticsearch.index.analysis.AbstractTokenFilterFactory;
+import com.carrotsearch.randomizedtesting.annotations.Name;
+import com.carrotsearch.randomizedtesting.annotations.ParametersFactory;
+import org.elasticsearch.test.rest.yaml.ClientYamlTestCandidate;
+import org.elasticsearch.test.rest.yaml.ESClientYamlSuiteTestCase;
 
-public class MarkHebrewTokensFilterFactory extends AbstractTokenFilterFactory {
+/**
+ * This IT is necessary for the gradle build to pass.
+ * Test cases are yaml files residing under test resources.
+ */
+public class HebrewAnalysisQueryRestIT extends ESClientYamlSuiteTestCase {
 
-    @Inject
-    public MarkHebrewTokensFilterFactory(IndexSettings indexSettings, Environment env, String name, Settings settings) {
-        super(indexSettings, name, settings);
+    public HebrewAnalysisQueryRestIT(@Name("yaml") ClientYamlTestCandidate testCandidate) {
+        super(testCandidate);
     }
 
-    @Override
-    public TokenStream create(TokenStream tokenStream) {
-        return new MarkHebrewTokensFilter(tokenStream);
+    @ParametersFactory
+    public static Iterable<Object[]> parameters() throws Exception {
+        return ESClientYamlSuiteTestCase.createParameters();
     }
 }

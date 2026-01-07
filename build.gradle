@@ -3,13 +3,11 @@ import com.github.mgk.gradle.*
 
 buildscript {
     ext {
-        elasticsearchVersion = System.getProperty("es.version", "8.17.0")
+        elasticsearchVersion = System.getProperty("es.version", "7.17.9")
     }
     repositories {
         mavenLocal()
         jcenter()
-        // Add an alternative repository that may host the artifact
-        maven { url 'https://repo.grails.org/grails/core/' } // Many older groovy dependencies are here// 
     }
     dependencies {
         classpath "org.elasticsearch.gradle:build-tools:${elasticsearchVersion}"
@@ -24,7 +22,6 @@ plugins {
 apply plugin: 'idea'
 apply plugin: 'java'
 apply plugin: 'elasticsearch.esplugin'
-//apply plugin: 'elasticsearch.yaml-rest-test'
 
 // ext {
 //     licenseFile = rootProject.file('LICENSE')
@@ -49,14 +46,10 @@ dependencies {
     compileOnly group: 'org.apache.lucene', name: 'lucene-core', version: '8.10.1'
     compileOnly group: 'org.apache.lucene', name: 'lucene-analyzers-common', version: '8.10.1'
     compileOnly group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.17.1'
-    compileOnly group: 'org.elasticsearch', name: 'elasticsearch', version: '8.17.0'
-    compileOnly group: 'org.elasticsearch', name: 'elasticsearch-core', version: '8.17.0'
-    compileOnly group: 'org.elasticsearch', name: 'elasticsearch-x-content', version: '8.17.0'
-    testImplementation group: 'org.elasticsearch.test', name: 'framework', version: '8.17.0'
-}
-
-test {
-  systemProperties 'java.security.policy': file("$projectDir/plugin-security.policy").absolutePath
+    compileOnly group: 'org.elasticsearch', name: 'elasticsearch', version: '7.17.9'
+    compileOnly group: 'org.elasticsearch', name: 'elasticsearch-core', version: '7.17.9'
+    compileOnly group: 'org.elasticsearch', name: 'elasticsearch-x-content', version: '7.17.9'
+    testImplementation group: 'org.elasticsearch.test', name: 'framework', version: '7.17.9'
 }
 
 configurations.all {
@@ -145,7 +138,7 @@ if (project.hasProperty('commercial')) {
     }
 
 } else {
-    version = '8.17.0'
+    version = '7.17.9'
 
     esplugin {
         name 'analysis-hebrew'
@@ -188,7 +181,7 @@ if (project.hasProperty('commercial')) {
 
             version {
                 name = project.version
-                vcsTag = '8.17.0'
+                vcsTag = '7.17.9'
             }
         }
     }
