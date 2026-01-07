@@ -2,7 +2,14 @@
 
 Originally powered by HebMorph (https://github.com/synhershko/HebMorph) and licensed under the AGPL3, currently using this [fork](https://github.com/Immanuelbh/HebMorph) for latest version updates.
 
-[![Download](https://img.shields.io/badge/Download-7.16.1-blue) ](https://github.com/Immanuelbh/elasticsearch-analysis-hebrew/releases/download/elasticsearch-analysis-hebrew-7.16.1/elasticsearch-analysis-hebrew-7.16.1.zip)
+[![Version](https://img.shields.io/badge/Version-8.17.0-blue)](https://github.com/whiletrue-industries/elasticsearch-analysis-hebrew)
+[![Docker](https://img.shields.io/badge/Docker-Available-green)](https://github.com/whiletrue-industries/elasticsearch-analysis-hebrew/pkgs/container/elasticsearch-analysis-hebrew)
+
+## Requirements
+
+- Elasticsearch 8.17.0
+- Java 17 or higher
+- Hebrew dictionary files (bundled in the plugin)
 
 ## Installation
 
@@ -25,67 +32,65 @@ Images are available at: https://github.com/whiletrue-industries/elasticsearch-a
 
 ### Manual Plugin Installation
 
-Alternatively, install the plugin manually by invoking the command which fits your elasticsearch version (older versions can be found at the bottom):
+For Elasticsearch 8.17.0, build the plugin from source:
 
 ```shell
-./bin/elasticsearch-plugin install --batch https://github.com/Immanuelbh/elasticsearch-analysis-hebrew/releases/download/elasticsearch-analysis-hebrew-7.16.1/elasticsearch-analysis-hebrew-7.16.1.zip
+git clone https://github.com/whiletrue-industries/elasticsearch-analysis-hebrew.git
+cd elasticsearch-analysis-hebrew
+./gradlew assemble
+./bin/elasticsearch-plugin install file:///path/to/build/distributions/analysis-hebrew-8.17.0.zip
 ```
 
-### Earlier versions
-#### v5.x
-For earlier versions (5.x), there is no need for the batch flag.
-
-#### v2.x and earlier
-For even earlier versions (2.x and before) the installation looks a bit different:
-```shell
-./bin/plugin install https://bintray.com/synhershko/elasticsearch-analysis-hebrew/download_file?file_path=elasticsearch-analysis-hebrew-2.4.2
-```
-
-During installation, you may be prompted for additional permissions:
+During installation, you will be prompted for additional permissions:
 
 ```shell
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @     WARNING: plugin requires additional permissions     @
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-* java.io.FilePermission /var/lib/hebmorph/dictionary.dict read
 * java.io.FilePermission /var/lib/hspell-data-files read
 * java.io.FilePermission /var/lib/hspell-data-files/* read
-* java.lang.RuntimePermission accessClassInPackage.sun.reflect.generics.reflectiveObjects
-See http://docs.oracle.com/javase/8/docs/technotes/guides/security/permissions.html
+See https://docs.oracle.com/javase/8/docs/technotes/guides/security/permissions.html
 for descriptions of what these permissions allow and the associated risks.
 
 Continue with installation? [y/N]y
 ```
 
-This is normal - please confirm by typing y and hitting Enter.
-
-Then be sure to restart the ElasticSearch service.
+Confirm by typing `y` and pressing Enter, then restart Elasticsearch.
 
 ## Dictionaries
 
-This plugin uses dictionary files for its operation. The open-source version is using hspell data files. In the 7.x version, and the 5.x versions, the dictionaries are bundled in the plugin download itself.
+This plugin uses dictionary files for its operation. The open-source version uses hspell data files, which are **bundled in the plugin** (versions 5.x, 7.x, and 8.x).
 
-For earlier versions, you will need to obtain the Hebrew dictionary files yourself. The open-sourced hspell files can be downloaded here: https://github.com/synhershko/HebMorph/tree/master/hspell-data-files. Download the entire folder and copy it to be either in the plugin's folder (meaning, `plugins/analysis-hebrew/hspell-data-files`) or under `/var/lib/hspell-data-files`.
+### Custom Dictionary Path
 
-Elasticsearch can also be configured to load the dictionary from another folder, this is done by adding the following line to elasticsearch.yml file:
+To load the dictionary from a custom location, add this to `elasticsearch.yml`:
 
 ```yml
 hebrew.dict.path: /PATH/TO/HSPELL/FOLDER
 ```
 
-You will also need to edit `plugin-security.policy` accordingly.
+You will also need to edit `plugin-security.policy` to grant read permissions to that path.
 
-The dictionary used in by the commercial version follows a similar pattern.
+The dictionary used by the commercial version follows a similar pattern.
 
-You can confirm installation by launching elasticsearch and seeing the following in the logs:
+### Verification
 
-```shell
-[2017-03-22T15:43:05,927][INFO ][c.c.e.HebrewAnalysisPlugin] Defaulting to HSpell dictionary loader
-[2017-03-22T15:43:07,751][INFO ][c.c.e.HebrewAnalysisPlugin] Trying to load hspell from path plugins/analysis-hebrew/hspell-data-files/
-[2017-03-22T15:43:07,751][INFO ][c.c.e.HebrewAnalysisPlugin] Dictionary 'hspell' loaded successfully from path plugins/analysis-hebrew/hspell-data-files/
+Confirm installation by checking the logs for:
+
+```json
+{"log.level": "INFO", "message":"Defaulting to HSpell dictionary loader", ...}
+{"log.level": "INFO", "message":"Trying to load hspell from path /usr/share/elasticsearch/plugins/analysis-hebrew/hspell-data-files", ...}
+{"log.level": "INFO", "message":"Dictionary 'hspell' loaded successfully from path /usr/share/elasticsearch/plugins/analysis-hebrew/hspell-data-files", ...}
+{"log.level": "INFO", "message":"loaded plugin [analysis-hebrew]", ...}
 ```
 
-The easiest way to make sure the plugin is installed correctly is to request `/_hebrew/check-word/בדיקה` on your server (for example: browse to http://localhost:9200/_hebrew/check-word/בדיקה). If it loads, it means everything is set up, and you are good to go.
+Test the plugin:
+
+```bash
+curl http://localhost:9200/_hebrew/check-word/בדיקה
+```
+
+If you get a response, the plugin is working correctly.
 
 ## Commercial
 
@@ -145,38 +150,39 @@ POST test-hebrew/_search
 }
 ```
 
-## Older Versions
-
-Elasticsearch versions 1.4.0 - 1.7.3:
-
-```shell
-bin/plugin --install analysis-hebrew --url https://bintray.com/artifact/download/synhershko/elasticsearch-analysis-hebrew/elasticsearch-analysis-hebrew-1.7.zip
-```
-
-Even older versions:
-
-~/elasticsearch-0.90.11$ bin/plugin --install analysis-hebrew --url https://bintray.com/artifact/download/synhershko/elasticsearch-analysis-hebrew/elasticsearch-analysis-hebrew-1.0.zip
-
-~/elasticsearch-1.0.0$ bin/plugin --install analysis-hebrew --url https://bintray.com/artifact/download/synhershko/elasticsearch-analysis-hebrew/elasticsearch-analysis-hebrew-1.2.zip
-
-~/elasticsearch-1.2.1$ bin/plugin --install analysis-hebrew --url https://bintray.com/artifact/download/synhershko/elasticsearch-analysis-hebrew/elasticsearch-analysis-hebrew-1.4.zip
-
-~/elasticsearch-1.3.2$ bin/plugin --install analysis-hebrew --url https://bintray.com/artifact/download/synhershko/elasticsearch-analysis-hebrew/elasticsearch-analysis-hebrew-1.5.zip
-
 ## Development
-Get the matching version.properties file from Elasticsearch:
+
+### Requirements
+- Java 17 or higher
+- Gradle 8.5+ (included via wrapper)
+
+### Building from Source
+
 ```shell
-curl https://raw.githubusercontent.com/elastic/elasticsearch/7.10/buildSrc/version.properties -O version.properties
+git clone https://github.com/whiletrue-industries/elasticsearch-analysis-hebrew.git
+cd elasticsearch-analysis-hebrew
+./gradlew build
 ```
 
-** Notice for this version (7.16.1) you should downgrade from 7.10.3 => 7.16.1
+The plugin ZIP will be in `build/distributions/analysis-hebrew-8.17.0.zip`.
 
-Build the plugin:
+### Running Tests
+
 ```shell
-gradle task build
+# Unit tests
+./gradlew test
+
+# Integration tests (requires Docker)
+./test-integration.sh
 ```
 
-** Note the build creates analysis-hebrew jar file. Not elasticsearch-analysis-hebrew.zip, which is built manually.
+### Contributing
+
+Contributions are welcome! Please ensure:
+1. All tests pass (`./gradlew build`)
+2. Integration tests pass (`./test-integration.sh`)
+3. Code follows existing style
+4. Commit messages are descriptive
 
 ## License
 
