@@ -21,8 +21,10 @@ package com.code972.elasticsearch.plugins.index.analysis;
 
 import com.carrotsearch.randomizedtesting.annotations.Name;
 import com.carrotsearch.randomizedtesting.annotations.ParametersFactory;
+import org.elasticsearch.test.cluster.ElasticsearchCluster;
 import org.elasticsearch.test.rest.yaml.ClientYamlTestCandidate;
 import org.elasticsearch.test.rest.yaml.ESClientYamlSuiteTestCase;
+import org.junit.ClassRule;
 
 /**
  * This IT is necessary for the gradle build to pass.
@@ -30,8 +32,18 @@ import org.elasticsearch.test.rest.yaml.ESClientYamlSuiteTestCase;
  */
 public class HebrewAnalysisQueryRestIT extends ESClientYamlSuiteTestCase {
 
+    @ClassRule
+    public static ElasticsearchCluster cluster = ElasticsearchCluster.local()
+            .plugin("analysis-hebrew")
+            .build();
+
     public HebrewAnalysisQueryRestIT(@Name("yaml") ClientYamlTestCandidate testCandidate) {
         super(testCandidate);
+    }
+
+    @Override
+    protected String getTestRestCluster() {
+        return cluster.getHttpAddresses();
     }
 
     @ParametersFactory

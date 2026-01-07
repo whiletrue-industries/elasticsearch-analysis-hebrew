@@ -20,25 +20,35 @@
 package com.code972.elasticsearch.plugins.index.analysis;
 
 import com.code972.elasticsearch.HebrewAnalysisPlugin;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.plugins.Plugin;
-import org.elasticsearch.test.ESIntegTestCase;
-
-import java.util.Collection;
-import java.util.Collections;
+import org.elasticsearch.test.ESTestCase;
 
 /**
- * Created by synhershko on 10/07/2017.
+ * Basic unit test for Hebrew Analysis Plugin
  */
-public class HebrewAnalysisPluginTests extends ESIntegTestCase {
-    /**
-     * Returns a collection of plugins that should be loaded on each node.
-     */
-    @Override
-    protected Collection<Class<? extends Plugin>> nodePlugins() {
-        return Collections.singletonList(HebrewAnalysisPlugin.class);
-    }
+public class HebrewAnalysisPluginTests extends ESTestCase {
 
-    public void testPlugin() {
-        assert(true);
+    public void testPluginInstantiation() throws Exception {
+        // Test that the plugin can be instantiated
+        Settings settings = Settings.builder()
+                .put("path.home", createTempDir())
+                .build();
+
+        HebrewAnalysisPlugin plugin = new HebrewAnalysisPlugin(settings, createTempDir());
+        assertNotNull("Plugin should be instantiated", plugin);
+
+        // Verify plugin provides the expected components
+        assertNotNull("Plugin should provide token filters", plugin.getTokenFilters());
+        assertFalse("Plugin should have token filters", plugin.getTokenFilters().isEmpty());
+
+        assertNotNull("Plugin should provide tokenizers", plugin.getTokenizers());
+        assertFalse("Plugin should have tokenizers", plugin.getTokenizers().isEmpty());
+
+        assertNotNull("Plugin should provide analyzers", plugin.getAnalyzers());
+        assertFalse("Plugin should have analyzers", plugin.getAnalyzers().isEmpty());
+
+        assertNotNull("Plugin should provide settings", plugin.getSettings());
+        assertFalse("Plugin should have settings", plugin.getSettings().isEmpty());
     }
 }

@@ -3,11 +3,11 @@ import com.github.mgk.gradle.*
 
 buildscript {
     ext {
-        elasticsearchVersion = System.getProperty("es.version", "7.17.9")
+        elasticsearchVersion = System.getProperty("es.version", "8.17.0")
     }
     repositories {
         mavenLocal()
-        jcenter()
+        mavenCentral()
     }
     dependencies {
         classpath "org.elasticsearch.gradle:build-tools:${elasticsearchVersion}"
@@ -16,7 +16,7 @@ buildscript {
 
 plugins {
     id "de.undercouch.download" version "5.0.2"
-    id "com.jfrog.bintray" version "1.8.4"
+    // id "com.jfrog.bintray" version "1.8.4" // Commented out - Bintray/JCenter shutdown
     id "com.github.mgk.gradle.s3" version "1.4.0"
 }
 apply plugin: 'idea'
@@ -38,7 +38,6 @@ tasks.withType(JavaCompile) {
 repositories {
     mavenCentral()
     mavenLocal()
-    jcenter()
     google()
 }
 
@@ -46,10 +45,14 @@ dependencies {
     compileOnly group: 'org.apache.lucene', name: 'lucene-core', version: '8.10.1'
     compileOnly group: 'org.apache.lucene', name: 'lucene-analyzers-common', version: '8.10.1'
     compileOnly group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.17.1'
-    compileOnly group: 'org.elasticsearch', name: 'elasticsearch', version: '7.17.9'
-    compileOnly group: 'org.elasticsearch', name: 'elasticsearch-core', version: '7.17.9'
-    compileOnly group: 'org.elasticsearch', name: 'elasticsearch-x-content', version: '7.17.9'
-    testImplementation group: 'org.elasticsearch.test', name: 'framework', version: '7.17.9'
+    compileOnly group: 'org.elasticsearch', name: 'elasticsearch', version: '8.17.0'
+    compileOnly group: 'org.elasticsearch', name: 'elasticsearch-core', version: '8.17.0'
+    compileOnly group: 'org.elasticsearch', name: 'elasticsearch-x-content', version: '8.17.0'
+    testImplementation group: 'org.elasticsearch.test', name: 'framework', version: '8.17.0'
+}
+
+test {
+  systemProperties 'java.security.policy': file("$projectDir/plugin-security.policy").absolutePath
 }
 
 configurations.all {
@@ -138,7 +141,7 @@ if (project.hasProperty('commercial')) {
     }
 
 } else {
-    version = '7.17.9'
+    version = '8.17.0'
 
     esplugin {
         name 'analysis-hebrew'
@@ -158,36 +161,40 @@ if (project.hasProperty('commercial')) {
         }
     }
     bundlePlugin.dependsOn copyPackaging
-
-    bintray {
-        user    = 'pwalsh'
-        key     = System.getenv('BINTRAY_KEY')
-        filesSpec {
-            from 'build/distributions/analysis-hebrew-'+ project.version +'.zip'
-            rename ('analysis-hebrew-'+ project.version +'.zip', 'elasticsearch-analysis-hebrew-'+ project.version +'.zip')
-            into '.'
-        }
-        publish = true
-        pkg {
-            repo = 'elasticsearch-analysis-hebrew'
-            name = 'elasticsearch-analysis-hebrew-plugin'
-            licenses = ['AGPL-V3']
-            publicDownloadNumbers = true
-
-            vcsUrl = 'https://github.com/pwalsh/elasticsearch-analysis-hebrew.git'
-            githubRepo = 'pwalsh/elasticsearch-analysis-hebrew'
-            githubReleaseNotesFile = 'README.md'
-            websiteUrl = 'http://code972.com/hebmorph'
-
-            version {
-                name = project.version
-                vcsTag = '7.17.9'
-            }
-        }
+    tasks.named('explodedBundlePlugin').configure {
+        dependsOn copyPackaging
     }
 
-    task release(dependsOn: bintrayUpload) {
-        // Placeholder task just to run the bintrayUpload task
+    // Bintray upload disabled - JCenter/Bintray shutdown
+    // bintray {
+    //     user    = 'pwalsh'
+    //     key     = System.getenv('BINTRAY_KEY')
+    //     filesSpec {
+    //         from 'build/distributions/analysis-hebrew-'+ project.version +'.zip'
+    //         rename ('analysis-hebrew-'+ project.version +'.zip', 'elasticsearch-analysis-hebrew-'+ project.version +'.zip')
+    //         into '.'
+    //     }
+    //     publish = true
+    //     pkg {
+    //         repo = 'elasticsearch-analysis-hebrew'
+    //         name = 'elasticsearch-analysis-hebrew-plugin'
+    //         licenses = ['AGPL-V3']
+    //         publicDownloadNumbers = true
+    //
+    //         vcsUrl = 'https://github.com/pwalsh/elasticsearch-analysis-hebrew.git'
+    //         githubRepo = 'pwalsh/elasticsearch-analysis-hebrew'
+    //         githubReleaseNotesFile = 'README.md'
+    //         websiteUrl = 'http://code972.com/hebmorph'
+    //
+    //         version {
+    //             name = project.version
+    //             vcsTag = '8.17.0'
+    //         }
+    //     }
+    // }
+
+    task release {
+        // Placeholder task - Bintray upload disabled
     }
 }
 
