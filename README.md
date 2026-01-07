@@ -6,7 +6,26 @@ Originally powered by HebMorph (https://github.com/synhershko/HebMorph) and lice
 
 ## Installation
 
-First, install the plugin by invoking the command which fits your elasticsearch version (older versions can be found at the bottom):
+### Using Docker (Recommended)
+
+The easiest way to use Elasticsearch with the Hebrew analysis plugin is via the pre-built Docker images:
+
+```shell
+docker pull ghcr.io/whiletrue-industries/elasticsearch-analysis-hebrew:latest
+docker run -d -p 9200:9200 -e "discovery.type=single-node" -e "xpack.security.enabled=false" \
+  ghcr.io/whiletrue-industries/elasticsearch-analysis-hebrew:latest
+```
+
+Available tags:
+- `latest` - Latest version from master branch
+- `8.17.0` - Specific plugin version
+- `sha-{hash}` - Specific commit
+
+Images are available at: https://github.com/whiletrue-industries/elasticsearch-analysis-hebrew/pkgs/container/elasticsearch-analysis-hebrew
+
+### Manual Plugin Installation
+
+Alternatively, install the plugin manually by invoking the command which fits your elasticsearch version (older versions can be found at the bottom):
 
 ```shell
 ./bin/elasticsearch-plugin install --batch https://github.com/Immanuelbh/elasticsearch-analysis-hebrew/releases/download/elasticsearch-analysis-hebrew-7.16.1/elasticsearch-analysis-hebrew-7.16.1.zip
